@@ -1,0 +1,37 @@
+pipeline {
+    agent {
+        node {
+            label 't055-runner'
+        }
+    }
+
+    stages {
+        stage('Tag and Push to Docker Hub') {
+            steps {
+                script {
+                    def remoteServer = '54.197.206.140'
+                    def remoteUser = 'ubuntu'
+                    def remoteDockerImage = 'my-nginx'
+                    def imageName = "meghana67/second-repo:${env.BUILD_NUMBER}"
+                    def latestImageName = "meghana67/second-repo:latest"
+
+                    withCredentials([
+                        usernamePassword(credentialsId: 'dockerhub-t055', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
+                    ]) {
+                        sshagent(credentials: ['ssh-key-creds']) {
+                            sh """
+                                ssh -o StrictHostKeyChecking=no -l ${remoteUser} ${remoteServer} 'docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD &&
+                                docker tag ${remoteDockerImage} ${imageName} &&
+                                docker tag ${remoteDockerImage} ${latestImageName} &&
+                                docker push ${imageName} &&
+                                docker push ${latestImageName} &&
+                                docker logout'
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
