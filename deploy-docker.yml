@@ -1,0 +1,22 @@
+---
+- name: Build and run Docker container
+  hosts: nginx
+  become: true
+
+  tasks:
+
+    - name: Copy Dockerfile
+      copy:
+        src: Dockerfile
+        dest: /home/ubuntu
+
+    - name: Copy index.html to target machine
+      copy:
+        src: index.html
+        dest: /home/ubuntu
+
+    - name: Build Docker image
+      command: docker build -t my-nginx /home/ubuntu
+    
+    - name: Run Docker container
+      command: docker run -it -d -p 8001:80 my-nginx

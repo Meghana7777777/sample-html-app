@@ -1,0 +1,24 @@
+pipeline {
+    agent {
+        node {
+            label 't055-runner'
+        }
+    }
+    stages {
+        stage('checkout') {
+            steps {
+                git credentialsId: 'ca-git-access', branch: 'develop', url: "https://git.cloudavise.com/visops/t055/sample-html-app.git"
+            }
+        }
+        stage('install') {
+            steps {
+                sh "ansible-playbook -i inventory install-docker.yml"
+            }
+        }
+        stage('deploy') {
+            steps {
+                sh "ansible-playbook -i inventory deploy-docker.yml"
+            }
+        }
+    }
+}
